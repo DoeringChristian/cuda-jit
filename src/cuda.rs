@@ -1,5 +1,6 @@
 use std::ffi::CString;
 use std::ptr::null;
+use std::sync::Arc;
 
 use derive_more::Deref;
 use dlopen::wrapper::Container;
@@ -7,13 +8,26 @@ use log::{error, trace, warn};
 
 use crate::cuda_api::*;
 
-pub struct Device {}
+pub struct Device {
+    pub context: CUcontext,
+    pub id: i32,
+    pub pci_bus_id: i32,
+    pub pci_dom_id: i32,
+    pub pci_dev_id: i32,
+    pub num_sm: i32,
+    pub unified_addr: i32,
+    pub shared_memory_bytes: i32,
+    pub cc_minor: i32,
+    pub cc_major: i32,
+    pub mem_total: u64,
+}
 
 #[derive(Deref)]
 pub struct CUDA {
     #[deref]
     api: Container<CudaApi>,
     version: (i32, i32),
+    pub devices: Vec<Arc<Device>>,
 }
 
 impl CUDA {
@@ -52,18 +66,8 @@ impl CUDA {
             return None;
         }
 
-        Some(Self {
-            api: cuda,
-            version: (cuda_version_major, cuda_version_minor),
-        })
-    }
-
-    pub fn device(&self) -> Device {
-        let mut device_count = 0;
-        unsafe {
-            self.cuDeviceGetCount(&mut device_count);
-        }
-
+        // Search for devices
+        let mut devices = vec![];
         for i in 0..device_count {
             let mut pci_bus_id = 0;
             let mut pci_dom_id = 0;
@@ -79,70 +83,89 @@ impl CUDA {
             let mut context: CUcontext = null();
             let mut name = vec![0; 256];
 
-            unsafe { self.cuDevicePrimaryCtxRetain(&mut context, i).check() };
+            unsafe { cuda.cuDevicePrimaryCtxRetain(&mut context, i).check() };
 
             unsafe {
-                self.cuDeviceGetName(name.as_ptr() as *mut i8, 256, i)
+                cuda.cuDeviceGetName(name.as_ptr() as *mut i8, 256, i)
                     .check();
             }
             let name = String::from_utf8(name).unwrap();
 
             unsafe {
-                self.cuDeviceGetAttribute(
+                cuda.cuDeviceGetAttribute(
                     &mut pci_bus_id,
                     CUAttribute::CU_DEVICE_ATTRIBUTE_PCI_BUS_ID as i32,
                     i,
                 )
                 .check();
-                self.cuDeviceGetAttribute(
+                cuda.cuDeviceGetAttribute(
                     &mut pci_dev_id,
                     CUAttribute::CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID as i32,
                     i,
                 )
                 .check();
-                self.cuDeviceGetAttribute(
+                cuda.cuDeviceGetAttribute(
                     &mut pci_dom_id,
                     CUAttribute::CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID as i32,
                     i,
                 )
                 .check();
-                self.cuDeviceGetAttribute(
+                cuda.cuDeviceGetAttribute(
                     &mut num_sm,
                     CUAttribute::CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT as i32,
                     i,
                 )
                 .check();
-                self.cuDeviceGetAttribute(
+                cuda.cuDeviceGetAttribute(
                     &mut unified_addr,
                     CUAttribute::CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING as i32,
                     i,
                 )
                 .check();
-                self.cuDeviceGetAttribute(
+                cuda.cuDeviceGetAttribute(
                     &mut shared_memory_bytes,
                     CUAttribute::CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK_OPTIN as i32,
                     i,
                 )
                 .check();
-                self.cuDeviceGetAttribute(
+                cuda.cuDeviceGetAttribute(
                     &mut cc_minor,
                     CUAttribute::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR as i32,
                     i,
                 )
                 .check();
-                self.cuDeviceGetAttribute(
+                cuda.cuDeviceGetAttribute(
                     &mut cc_major,
                     CUAttribute::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR as i32,
                     i,
                 )
                 .check();
-                self.cuDeviceTotalMem(&mut mem_total, i).check();
+                cuda.cuDeviceTotalMem(&mut mem_total, i).check();
             };
 
             let cc = cc_major * 10 + cc_minor;
 
             trace!("Found CUDA Device {name}: PCI_ID {pci_bus_id}, {pci_dev_id}, {pci_dom_id}, compute cap. {cc_major}.{cc_minor}, {num_sm} SMs w/ {shared_memory_bytes}bytes shared mem, {mem_total}bytes global mem.");
+
+            devices.push(Arc::new(Device {
+                context,
+                id: i,
+                pci_bus_id,
+                pci_dom_id,
+                pci_dev_id,
+                num_sm,
+                unified_addr,
+                shared_memory_bytes,
+                cc_minor,
+                cc_major,
+                mem_total,
+            }));
         }
-        Device {}
+
+        Some(Self {
+            api: cuda,
+            version: (cuda_version_major, cuda_version_minor),
+            devices,
+        })
     }
 }

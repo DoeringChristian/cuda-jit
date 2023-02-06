@@ -9,6 +9,4 @@ use self::cuda::CUDA;
 fn main() {
     pretty_env_logger::init();
     let cuda = CUDA::create().unwrap();
-
-    cuda.device();
 }
