@@ -1,53 +1,53 @@
+use log::error;
 use std::ffi::{c_char, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
 
 use dlopen::wrapper::{Container, WrapperApi};
 use dlopen_derive::WrapperApi;
 
 #[repr(C)]
-struct CUctx_st {
+pub struct CUctx_st {
     _private: [u8; 0],
 }
 #[repr(C)]
-struct CUmod_st {
+pub struct CUmod_st {
     _private: [u8; 0],
 }
 #[repr(C)]
-struct CUfunc_st {
+pub struct CUfunc_st {
     _private: [u8; 0],
 }
 #[repr(C)]
-struct CUlinkState_st {
+pub struct CUlinkState_st {
     _private: [u8; 0],
 }
 #[repr(C)]
-struct CUstream_st {
+pub struct CUstream_st {
     _private: [u8; 0],
 }
 #[repr(C)]
-struct CUevent_st {
+pub struct CUevent_st {
     _private: [u8; 0],
 }
 #[repr(C)]
-struct CUarray_st {
+pub struct CUarray_st {
     _private: [u8; 0],
 }
 #[repr(C)]
-struct CUtexObject_st {
+pub struct CUtexObject_st {
     _private: [u8; 0],
 }
 
-type CUcontext = *const CUctx_st;
-type CUmodule = *const CUmod_st;
-type CUfunction = *const CUfunc_st;
-type CUlinkState = *const CUlinkState_st;
-type CUstream = *const CUstream_st;
-type CUevent = *const CUevent_st;
-type CUarray = *const CUarray_st;
-type CUtexObject = *const CUtexObject_st;
-//type CUresult = c_int;
-type CUdevice = c_int;
-type CUdeviceptr = *const c_void;
-type CUjit_option = c_int;
+pub type CUcontext = *const CUctx_st;
+pub type CUmodule = *const CUmod_st;
+pub type CUfunction = *const CUfunc_st;
+pub type CUlinkState = *const CUlinkState_st;
+pub type CUstream = *const CUstream_st;
+pub type CUevent = *const CUevent_st;
+pub type CUarray = *const CUarray_st;
+pub type CUtexObject = *const CUtexObject_st;
+pub type CUdevice = c_int;
+pub type CUdeviceptr = *const c_void;
+pub type CUjit_option = c_int;
 
 #[derive(Debug, PartialEq, Eq)]
 #[repr(C)]
@@ -59,6 +59,28 @@ pub enum CUresult {
     CUDA_ERROR_DEINITIALIZED = 4,
     CUDA_ERROR_NOT_FOUND = 500,
     CUDA_ERROR_PEER_ACCESS_ALREADY_ENABLED = 704,
+}
+impl CUresult {
+    pub fn check(self) -> Self {
+        assert!(self == Self::CUDA_SUCCESS);
+        self
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
+pub enum CUAttribute {
+    CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR = 75,
+    CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR = 76,
+    CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK_OPTIN = 97,
+    CU_DEVICE_ATTRIBUTE_MEMORY_POOLS_SUPPORTED = 115,
+    CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT = 16,
+    CU_DEVICE_ATTRIBUTE_PCI_BUS_ID = 33,
+    CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID = 34,
+    CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID = 50,
+    CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING = 41,
+    CU_DEVICE_ATTRIBUTE_TCC_DRIVER = 35,
+    CU_DEVICE_ATTRIBUTE_COMPUTE_PREEMPTION_SUPPORTED = 90,
 }
 
 type size_t = c_ulong;
@@ -187,63 +209,51 @@ pub struct CUDA_MEMCPY3D {
     pub Depth: size_t,
 }
 
-const CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR: u32 = 75;
-const CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR: u32 = 76;
-const CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK_OPTIN: u32 = 97;
-const CU_DEVICE_ATTRIBUTE_MEMORY_POOLS_SUPPORTED: u32 = 115;
-const CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT: u32 = 16;
-const CU_DEVICE_ATTRIBUTE_PCI_BUS_ID: u32 = 33;
-const CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID: u32 = 34;
-const CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID: u32 = 50;
-const CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING: u32 = 41;
-const CU_DEVICE_ATTRIBUTE_TCC_DRIVER: u32 = 35;
-const CU_DEVICE_ATTRIBUTE_COMPUTE_PREEMPTION_SUPPORTED: u32 = 90;
+pub const CU_DEVICE_CPU: i32 = -1;
 
-const CU_DEVICE_CPU: i32 = -1;
+pub const CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES: u32 = 8;
+pub const CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT: u32 = 9;
+pub const CU_FUNC_CACHE_PREFER_L1: u32 = 2;
 
-const CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES: u32 = 8;
-const CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT: u32 = 9;
-const CU_FUNC_CACHE_PREFER_L1: u32 = 2;
-
-const CU_JIT_INPUT_PTX: u32 = 1;
-const CU_JIT_INFO_LOG_BUFFER: u32 = 3;
-const CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES: u32 = 4;
-const CU_JIT_ERROR_LOG_BUFFER: u32 = 5;
-const CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES: u32 = 6;
-const CU_JIT_OPTIMIZATION_LEVEL: u32 = 7;
-const CU_JIT_GENERATE_DEBUG_INFO: u32 = 11;
-const CU_JIT_LOG_VERBOSE: u32 = 12;
-const CU_JIT_GENERATE_LINE_INFO: u32 = 13;
+pub const CU_JIT_INPUT_PTX: u32 = 1;
+pub const CU_JIT_INFO_LOG_BUFFER: u32 = 3;
+pub const CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES: u32 = 4;
+pub const CU_JIT_ERROR_LOG_BUFFER: u32 = 5;
+pub const CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES: u32 = 6;
+pub const CU_JIT_OPTIMIZATION_LEVEL: u32 = 7;
+pub const CU_JIT_GENERATE_DEBUG_INFO: u32 = 11;
+pub const CU_JIT_LOG_VERBOSE: u32 = 12;
+pub const CU_JIT_GENERATE_LINE_INFO: u32 = 13;
 
 // const CU_LAUNCH_PARAM_BUFFER_POINTER (void *) 1
 // const CU_LAUNCH_PARAM_BUFFER_SIZE (void *) 2
 // const CU_LAUNCH_PARAM_END (void *) 0
 
-const CU_MEM_ATTACH_GLOBAL: u32 = 1;
-const CU_MEM_ADVISE_SET_READ_MOSTLY: u32 = 1;
-const CU_SHAREDMEM_CARVEOUT_MAX_L1: u32 = 0;
+pub const CU_MEM_ATTACH_GLOBAL: u32 = 1;
+pub const CU_MEM_ADVISE_SET_READ_MOSTLY: u32 = 1;
+pub const CU_SHAREDMEM_CARVEOUT_MAX_L1: u32 = 0;
 
-const CU_STREAM_DEFAULT: u32 = 0;
-const CU_STREAM_NON_BLOCKING: u32 = 1;
-const CU_EVENT_DEFAULT: u32 = 0;
-const CU_EVENT_DISABLE_TIMING: u32 = 2;
-const CU_MEMORYTYPE_HOST: u32 = 1;
-const CU_POINTER_ATTRIBUTE_MEMORY_TYPE: u32 = 2;
+pub const CU_STREAM_DEFAULT: u32 = 0;
+pub const CU_STREAM_NON_BLOCKING: u32 = 1;
+pub const CU_EVENT_DEFAULT: u32 = 0;
+pub const CU_EVENT_DISABLE_TIMING: u32 = 2;
+pub const CU_MEMORYTYPE_HOST: u32 = 1;
+pub const CU_POINTER_ATTRIBUTE_MEMORY_TYPE: u32 = 2;
 
-const CU_RESOURCE_TYPE_ARRAY: u32 = 0;
-const CU_TR_FILTER_MODE_POINT: u32 = 0;
-const CU_TR_FILTER_MODE_LINEAR: u32 = 1;
-const CU_TRSF_NORMALIZED_COORDINATES: u32 = 2;
-const CU_TR_ADDRESS_MODE_WRAP: u32 = 0;
-const CU_TR_ADDRESS_MODE_CLAMP: u32 = 1;
-const CU_TR_ADDRESS_MODE_MIRROR: u32 = 2;
-const CU_MEMORYTYPE_DEVICE: u32 = 2;
-const CU_MEMORYTYPE_ARRAY: u32 = 3;
+pub const CU_RESOURCE_TYPE_ARRAY: u32 = 0;
+pub const CU_TR_FILTER_MODE_POINT: u32 = 0;
+pub const CU_TR_FILTER_MODE_LINEAR: u32 = 1;
+pub const CU_TRSF_NORMALIZED_COORDINATES: u32 = 2;
+pub const CU_TR_ADDRESS_MODE_WRAP: u32 = 0;
+pub const CU_TR_ADDRESS_MODE_CLAMP: u32 = 1;
+pub const CU_TR_ADDRESS_MODE_MIRROR: u32 = 2;
+pub const CU_MEMORYTYPE_DEVICE: u32 = 2;
+pub const CU_MEMORYTYPE_ARRAY: u32 = 3;
 
-const CU_AD_FORMAT_FLOAT: u32 = 0x20;
-const CU_RES_VIEW_FORMAT_FLOAT_1X32: u32 = 0x16;
-const CU_RES_VIEW_FORMAT_FLOAT_2X32: u32 = 0x17;
-const CU_RES_VIEW_FORMAT_FLOAT_4X32: u32 = 0x18;
+pub const CU_AD_FORMAT_FLOAT: u32 = 0x20;
+pub const CU_RES_VIEW_FORMAT_FLOAT_1X32: u32 = 0x16;
+pub const CU_RES_VIEW_FORMAT_FLOAT_2X32: u32 = 0x17;
+pub const CU_RES_VIEW_FORMAT_FLOAT_4X32: u32 = 0x18;
 
 #[derive(WrapperApi)]
 pub struct CudaApi {
