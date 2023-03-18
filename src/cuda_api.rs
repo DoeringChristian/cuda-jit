@@ -71,6 +71,9 @@ pub enum CUresult {
 }
 impl CUresult {
     pub fn check(self) -> crate::cuda_result::Result<()> {
+        if self != CUresult::CUDA_SUCCESS {
+            error!("CUDA Error {:?}", self);
+        }
         self.into()
     }
 }
@@ -217,51 +220,51 @@ pub struct CUDA_MEMCPY3D {
     pub Depth: size_t,
 }
 
-pub const CU_DEVICE_CPU: i32 = -1;
+pub const CU_DEVICE_CPU: c_int = -1;
 
-pub const CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES: u32 = 8;
-pub const CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT: u32 = 9;
-pub const CU_FUNC_CACHE_PREFER_L1: u32 = 2;
+pub const CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES: c_int = 8;
+pub const CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT: c_int = 9;
+pub const CU_FUNC_CACHE_PREFER_L1: c_int = 2;
 
-pub const CU_JIT_INPUT_PTX: u32 = 1;
-pub const CU_JIT_INFO_LOG_BUFFER: u32 = 3;
-pub const CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES: u32 = 4;
-pub const CU_JIT_ERROR_LOG_BUFFER: u32 = 5;
-pub const CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES: u32 = 6;
-pub const CU_JIT_OPTIMIZATION_LEVEL: u32 = 7;
-pub const CU_JIT_GENERATE_DEBUG_INFO: u32 = 11;
-pub const CU_JIT_LOG_VERBOSE: u32 = 12;
-pub const CU_JIT_GENERATE_LINE_INFO: u32 = 13;
+pub const CU_JIT_INPUT_PTX: c_int = 1;
+pub const CU_JIT_INFO_LOG_BUFFER: c_int = 3;
+pub const CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES: c_int = 4;
+pub const CU_JIT_ERROR_LOG_BUFFER: c_int = 5;
+pub const CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES: c_int = 6;
+pub const CU_JIT_OPTIMIZATION_LEVEL: c_int = 7;
+pub const CU_JIT_GENERATE_DEBUG_INFO: c_int = 11;
+pub const CU_JIT_LOG_VERBOSE: c_int = 12;
+pub const CU_JIT_GENERATE_LINE_INFO: c_int = 13;
 
 // const CU_LAUNCH_PARAM_BUFFER_POINTER (void *) 1
 // const CU_LAUNCH_PARAM_BUFFER_SIZE (void *) 2
 // const CU_LAUNCH_PARAM_END (void *) 0
 
-pub const CU_MEM_ATTACH_GLOBAL: u32 = 1;
-pub const CU_MEM_ADVISE_SET_READ_MOSTLY: u32 = 1;
-pub const CU_SHAREDMEM_CARVEOUT_MAX_L1: u32 = 0;
+pub const CU_MEM_ATTACH_GLOBAL: c_int = 1;
+pub const CU_MEM_ADVISE_SET_READ_MOSTLY: c_int = 1;
+pub const CU_SHAREDMEM_CARVEOUT_MAX_L1: c_int = 0;
 
-pub const CU_STREAM_DEFAULT: u32 = 0;
-pub const CU_STREAM_NON_BLOCKING: u32 = 1;
-pub const CU_EVENT_DEFAULT: u32 = 0;
-pub const CU_EVENT_DISABLE_TIMING: u32 = 2;
-pub const CU_MEMORYTYPE_HOST: u32 = 1;
-pub const CU_POINTER_ATTRIBUTE_MEMORY_TYPE: u32 = 2;
+pub const CU_STREAM_DEFAULT: c_int = 0;
+pub const CU_STREAM_NON_BLOCKING: c_int = 1;
+pub const CU_EVENT_DEFAULT: c_int = 0;
+pub const CU_EVENT_DISABLE_TIMING: c_int = 2;
+pub const CU_MEMORYTYPE_HOST: c_int = 1;
+pub const CU_POINTER_ATTRIBUTE_MEMORY_TYPE: c_int = 2;
 
-pub const CU_RESOURCE_TYPE_ARRAY: u32 = 0;
-pub const CU_TR_FILTER_MODE_POINT: u32 = 0;
-pub const CU_TR_FILTER_MODE_LINEAR: u32 = 1;
-pub const CU_TRSF_NORMALIZED_COORDINATES: u32 = 2;
-pub const CU_TR_ADDRESS_MODE_WRAP: u32 = 0;
-pub const CU_TR_ADDRESS_MODE_CLAMP: u32 = 1;
-pub const CU_TR_ADDRESS_MODE_MIRROR: u32 = 2;
-pub const CU_MEMORYTYPE_DEVICE: u32 = 2;
-pub const CU_MEMORYTYPE_ARRAY: u32 = 3;
+pub const CU_RESOURCE_TYPE_ARRAY: c_int = 0;
+pub const CU_TR_FILTER_MODE_POINT: c_int = 0;
+pub const CU_TR_FILTER_MODE_LINEAR: c_int = 1;
+pub const CU_TRSF_NORMALIZED_COORDINATES: c_int = 2;
+pub const CU_TR_ADDRESS_MODE_WRAP: c_int = 0;
+pub const CU_TR_ADDRESS_MODE_CLAMP: c_int = 1;
+pub const CU_TR_ADDRESS_MODE_MIRROR: c_int = 2;
+pub const CU_MEMORYTYPE_DEVICE: c_int = 2;
+pub const CU_MEMORYTYPE_ARRAY: c_int = 3;
 
-pub const CU_AD_FORMAT_FLOAT: u32 = 0x20;
-pub const CU_RES_VIEW_FORMAT_FLOAT_1X32: u32 = 0x16;
-pub const CU_RES_VIEW_FORMAT_FLOAT_2X32: u32 = 0x17;
-pub const CU_RES_VIEW_FORMAT_FLOAT_4X32: u32 = 0x18;
+pub const CU_AD_FORMAT_FLOAT: c_int = 0x20;
+pub const CU_RES_VIEW_FORMAT_FLOAT_1X32: c_int = 0x16;
+pub const CU_RES_VIEW_FORMAT_FLOAT_2X32: c_int = 0x17;
+pub const CU_RES_VIEW_FORMAT_FLOAT_4X32: c_int = 0x18;
 
 #[derive(WrapperApi)]
 pub struct CudaApi {

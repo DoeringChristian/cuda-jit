@@ -1,4 +1,5 @@
-use std::ffi::{c_void, CString};
+use std::ffi::{c_char, c_uint, c_void, CStr, CString};
+use std::fmt::Debug;
 use std::ptr::{null, null_mut};
 use std::sync::Arc;
 
@@ -57,6 +58,7 @@ pub struct Device {
     pub cc_minor: i32,
     pub cc_major: i32,
     pub mem_total: u64,
+    pub name: String,
 }
 
 impl Device {
@@ -151,6 +153,7 @@ impl Device {
             cc_minor,
             cc_major,
             mem_total,
+            name,
         })
     }
 }
@@ -204,5 +207,63 @@ impl CUDA {
             version: (cuda_version_major, cuda_version_minor),
             device_count,
         })
+    }
+
+    pub fn compile_jit(&self, buf: &mut str) -> Result<()> {
+        trace!("Compiling ptx");
+        const log_size: usize = 16384;
+        let mut error_log = [0 as u8; log_size];
+        let mut info_log = [0 as u8; log_size];
+        let mut opts = [
+            CU_JIT_OPTIMIZATION_LEVEL,
+            CU_JIT_LOG_VERBOSE,
+            CU_JIT_INFO_LOG_BUFFER,
+            CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES,
+            CU_JIT_ERROR_LOG_BUFFER,
+            CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES,
+            CU_JIT_GENERATE_LINE_INFO,
+            CU_JIT_GENERATE_DEBUG_INFO,
+        ];
+        let mut opt_vals = [
+            4 as *mut c_void,
+            1 as *mut c_void,
+            info_log.as_ptr() as *mut c_void,
+            log_size as c_uint as *mut c_void,
+            error_log.as_ptr() as *mut c_void,
+            log_size as c_uint as *mut c_void,
+            0 as *mut c_void,
+            0 as *mut c_void,
+        ];
+        let mut link_state: CUlinkState = std::ptr::null();
+        unsafe {
+            self.cuLinkCreate(
+                opts.len() as _,
+                opts.as_mut_ptr(),
+                opt_vals.as_mut_ptr(),
+                &mut link_state,
+            )
+            .check()?;
+        }
+
+        let rt = unsafe {
+            self.cuLinkAddData(
+                link_state,
+                CU_JIT_INPUT_PTX,
+                buf.as_mut_ptr() as *mut c_void,
+                buf.len() as _,
+                null(),
+                0,
+                null_mut(),
+                null_mut(),
+            )
+            .check()
+            .or_else(|e| {
+                error!("compilation failed with the error: {:?}", unsafe {
+                    CStr::from_bytes_until_nul(&error_log)
+                });
+                Err(e)
+            })?;
+        };
+        todo!()
     }
 }
