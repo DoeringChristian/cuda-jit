@@ -6,6 +6,8 @@ use crate::cuda_api::CUresult;
 pub enum CUError {
     #[error("CUDA Result {:?}!", .0)]
     CUResult(CUresult),
+    #[error("Unknown CUDA Result {}", .0)]
+    CUUnknownResult(i32),
     #[error("Unsupported CUDA version!")]
     CUDAVersion,
     #[error("No Device Found!")]

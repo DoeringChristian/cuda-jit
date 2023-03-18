@@ -49,7 +49,7 @@ pub type CUdevice = c_int;
 pub type CUdeviceptr = *const c_void;
 pub type CUjit_option = c_int;
 
-#[derive(Debug, PartialEq, Eq, thiserror::Error)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error)]
 #[repr(C)]
 pub enum CUresult {
     #[error("CUDA Success!")]
@@ -72,7 +72,7 @@ pub enum CUresult {
 impl CUresult {
     pub fn check(self) -> crate::cuda_result::Result<()> {
         if self != CUresult::CUDA_SUCCESS {
-            error!("CUDA Error {:?}", self);
+            error!("CUDA Error {:?} with code: {}", self, self as i32);
         }
         self.into()
     }
