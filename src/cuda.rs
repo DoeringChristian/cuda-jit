@@ -182,7 +182,7 @@ impl CUDA {
 
         if device_count < 1 {
             error!("No CUDA enabled devices found!");
-            return None;
+            return Err(CUError::NoDevice);
         }
 
         let mut cuda_version = 0;
@@ -196,10 +196,10 @@ impl CUDA {
 
         if cuda_version_major < 10 {
             error!("Cuda version {cuda_version_major}.{cuda_version_minor} is too old!");
-            return None;
+            return Err(CUError::CUDAVersion);
         }
 
-        Some(Self {
+        Ok(Self {
             api: cuda,
             version: (cuda_version_major, cuda_version_minor),
             device_count,
