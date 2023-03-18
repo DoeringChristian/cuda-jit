@@ -49,15 +49,24 @@ pub type CUdevice = c_int;
 pub type CUdeviceptr = *const c_void;
 pub type CUjit_option = c_int;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, thiserror::Error)]
 #[repr(C)]
 pub enum CUresult {
+    #[error("CUDA Success!")]
     CUDA_SUCCESS = 0,
+    #[error("Value was not inside acceptable value!")]
     CUDA_ERROR_INVALID_VALUE = 1,
+    #[error("Unable to allocate enough memory!")]
     CUDA_ERROR_OUT_OF_MEMORY = 2,
+    #[error("The CUDA driver has not been initialized with cuInit() !")]
     CUDA_ERROR_NOT_INITIALIZED = 3,
+    #[error("CUDA driver is shutting donw!")]
     CUDA_ERROR_DEINITIALIZED = 4,
+    #[error("No CUDA device found!")]
+    CUDA_ERROR_NO_DEVICE = 100,
+    #[error("The named symbol was not found!")]
     CUDA_ERROR_NOT_FOUND = 500,
+    #[error("Peer access already enabled")]
     CUDA_ERROR_PEER_ACCESS_ALREADY_ENABLED = 704,
 }
 impl CUresult {
