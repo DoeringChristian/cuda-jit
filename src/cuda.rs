@@ -76,7 +76,7 @@ impl Device {
         let mut context: CUcontext = null();
         let mut name = vec![0; 256];
 
-        unsafe { cuda.cuDevicePrimaryCtxRetain(&mut context, id).check() };
+        unsafe { cuda.cuDevicePrimaryCtxRetain(&mut context, id).check()? };
 
         unsafe {
             cuda.cuDeviceGetName(name.as_ptr() as *mut i8, 256, id)
@@ -90,7 +90,7 @@ impl Device {
                 CUAttribute::CU_DEVICE_ATTRIBUTE_PCI_BUS_ID as i32,
                 id,
             )
-            .check();
+            .check()?;
             cuda.cuDeviceGetAttribute(
                 &mut pci_dev_id,
                 CUAttribute::CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID as i32,
@@ -102,38 +102,38 @@ impl Device {
                 CUAttribute::CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID as i32,
                 id,
             )
-            .check();
+            .check()?;
             cuda.cuDeviceGetAttribute(
                 &mut num_sm,
                 CUAttribute::CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT as i32,
                 id,
             )
-            .check();
+            .check()?;
             cuda.cuDeviceGetAttribute(
                 &mut unified_addr,
                 CUAttribute::CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING as i32,
                 id,
             )
-            .check();
+            .check()?;
             cuda.cuDeviceGetAttribute(
                 &mut shared_memory_bytes,
                 CUAttribute::CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK_OPTIN as i32,
                 id,
             )
-            .check();
+            .check()?;
             cuda.cuDeviceGetAttribute(
                 &mut cc_minor,
                 CUAttribute::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR as i32,
                 id,
             )
-            .check();
+            .check()?;
             cuda.cuDeviceGetAttribute(
                 &mut cc_major,
                 CUAttribute::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR as i32,
                 id,
             )
-            .check();
-            cuda.cuDeviceTotalMem(&mut mem_total, id).check();
+            .check()?;
+            cuda.cuDeviceTotalMem(&mut mem_total, id).check()?;
         };
 
         trace!("Found CUDA Device {name}: PCI_ID {pci_bus_id}, {pci_dev_id}, {pci_dom_id}, compute cap. {cc_major}.{cc_minor}, {num_sm} SMs w/ {shared_memory_bytes}bytes shared mem, {mem_total}bytes global mem.");
