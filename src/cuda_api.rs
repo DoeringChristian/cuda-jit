@@ -51,19 +51,10 @@ pub type CUjit_option = c_int;
 
 #[derive(Debug, PartialEq, Eq)]
 #[repr(C)]
-pub enum CUresult {
-    CUDA_SUCCESS = 0,
-    CUDA_ERROR_INVALID_VALUE = 1,
-    CUDA_ERROR_OUT_OF_MEMORY = 2,
-    CUDA_ERROR_NOT_INITIALIZED = 3,
-    CUDA_ERROR_DEINITIALIZED = 4,
-    CUDA_ERROR_NOT_FOUND = 500,
-    CUDA_ERROR_PEER_ACCESS_ALREADY_ENABLED = 704,
-}
+pub struct CUresult(pub c_int);
 impl CUresult {
-    pub fn check(self) -> Self {
-        assert!(self == Self::CUDA_SUCCESS);
-        self
+    pub fn check(self) -> crate::cuda_result::Result<()> {
+        self.into()
     }
 }
 

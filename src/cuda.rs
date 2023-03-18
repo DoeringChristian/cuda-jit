@@ -7,6 +7,7 @@ use dlopen::wrapper::Container;
 use log::{error, trace, warn};
 
 use crate::cuda_api::*;
+use crate::cuda_result::*;
 
 pub struct Buffer {
     device: Arc<Device>,
@@ -59,7 +60,7 @@ pub struct Device {
 }
 
 impl Device {
-    pub fn create(cuda: &Arc<CUDA>, id: i32) -> Self {
+    pub fn create(cuda: &Arc<CUDA>, id: i32) -> Result<Self> {
         assert!(id < cuda.device_count);
         let mut pci_bus_id = 0;
         let mut pci_dom_id = 0;
@@ -79,7 +80,7 @@ impl Device {
 
         unsafe {
             cuda.cuDeviceGetName(name.as_ptr() as *mut i8, 256, id)
-                .check();
+                .check()?;
         }
         let name = String::from_utf8(name).unwrap();
 
@@ -137,7 +138,7 @@ impl Device {
 
         trace!("Found CUDA Device {name}: PCI_ID {pci_bus_id}, {pci_dev_id}, {pci_dom_id}, compute cap. {cc_major}.{cc_minor}, {num_sm} SMs w/ {shared_memory_bytes}bytes shared mem, {mem_total}bytes global mem.");
 
-        Device {
+        Ok(Device {
             cuda: cuda.clone(),
             context,
             id,
@@ -150,7 +151,7 @@ impl Device {
             cc_minor,
             cc_major,
             mem_total,
-        }
+        })
     }
 }
 
@@ -167,14 +168,10 @@ pub struct CUDA {
 }
 
 impl CUDA {
-    pub fn create() -> Option<Self> {
+    pub fn create() -> Result<Self> {
         let cuda = unsafe { Container::<CudaApi>::load("/usr/lib64/libcuda.so").unwrap() };
 
-        let res = unsafe { cuda.cuInit(0) };
-        if res != CUresult::CUDA_SUCCESS {
-            error!("cuInit failed with {:?}!", res);
-            return None;
-        }
+        unsafe { cuda.cuInit(0).check()? };
 
         let mut device_count = 0;
         unsafe {
