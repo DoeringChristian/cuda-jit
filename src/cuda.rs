@@ -159,7 +159,14 @@ impl Device {
 }
 
 impl Drop for Device {
-    fn drop(&mut self) {}
+    fn drop(&mut self) {
+        unsafe {
+            self.cuda
+                .cuDevicePrimaryCtxRelease(self.id)
+                .check()
+                .unwrap()
+        };
+    }
 }
 
 #[derive(Deref)]

@@ -12,7 +12,7 @@ use self::cuda::{Device, CUDA};
 fn main() {
     pretty_env_logger::init();
     let cuda = Arc::new(CUDA::create().unwrap());
-    let device = Arc::new(Device::create(&cuda, 0));
+    let device = Arc::new(Device::create(&cuda, 0).unwrap());
 
     let mut buf = String::from("test");
     cuda.compile_jit(&mut buf).unwrap();

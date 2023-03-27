@@ -51,6 +51,7 @@ dependencies = [
  "num_enum",
  "pretty_env_logger",
  "thiserror",
+ "tracing-mutex",
 ]
 
 [[package]]
@@ -361,6 +362,15 @@ dependencies = [
  "indexmap",
  "toml_datetime",
  "winnow",
+]
+
+[[package]]
+name = "tracing-mutex"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3df21ca58f0e0b5ee3181d8eebb8f2ec16d6ecbb2a04f351aa6abd7cf700f22"
+dependencies = [
+ "lazy_static",
 ]
 
 [[package]]
